@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>JS Range Selector</title>
+</head>
+<body>
+	<h2>Range Selector</h2>
+	<h3>Select the range, if status is sold, that date cannot be in range and checkbox is selected. Show min and max date on submit.</h3>
+<div id="pricing-wrapper">
+
+  <div class="season-wrapper">
+    <div class="season flex">
+    
+    <div class="season-right">
+      <ul id="season-prices">
+        
+      </ul>
+      
+      <div id="selected-start"></div>
+      <div id="selected-end"></div>
+      
+      <button id="submit-button" onClick="submitDates()" class="custom-button enquire week">Enquire Now</button>
+    </div> 
+  </div>
+  </div>
+  </div>
+
+<script type="text/javascript">
+    var front_prices = [
+      {
+        currency:"EUR",
+        end_date:"2018-12-09",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2018-12-02",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2018-12-16",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2018-12-09",
+        status:"sold"
+      },
+      {
+        currency:"EUR",
+        end_date:"2018-12-23",
+        nights:"7",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2018-12-16",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2018-12-30",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2018-12-23",
+        status:"sold"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-01-6",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2018-12-30",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-01-13",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-01-6",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-01-20",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2010-01-13",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-01-27",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-01-20",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-02-03",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-01-27",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-2-10",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-02-03",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-02-17",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-2-10",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-02-24",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-02-17",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-03-10",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-03-03",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-03-17",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-03-10",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-03-24",
+        price:"40200",
+        price_bnb:"40200",
+        price_sc:"0",
+        start_date:"2019-03-17",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-03-31",
+        price:"0",
+        price_bnb:"40200",
+        price_sc:"3000",
+        start_date:"2019-03-24",
+        status:"available"
+      },
+      {
+        currency:"EUR",
+        end_date:"2019-04-07",
+        price:"40200",
+        price_bnb:"0",
+        price_sc:"40200",
+        start_date:"2019-03-31",
+        status:"available"
+      },
+    ];
+    
+    var pricesArray = front_prices;
+    var filteredArray = []; // filtered array based on type
+    var selectedList = []; // selected checkboxes
+    
+    // hide section if no data
+    if (pricesArray.length == 0) {
+      document.getElementById('pricing-wrapper').style.display = "none";
+    }
+    
+    document.getElementById('submit-button').setAttribute('disabled', 'disabled'); //disable button at start because nothing selected
+    
+    var error = false; // error not showing at start, validate later
+    
+    // if you want to filter the array - not using in this exampl
+    for (var i = 0; i< pricesArray.length; i++) {
+      if (pricesArray[i].price != 0) {
+        pricesArray[i].index = i; // IMPORTANT - add index to this json, so we can use it later for validation
+        filteredArray.push(pricesArray[i]);
+      }
+    }
+    
+    appendPrices();
+    formatSoldPrices();
+    
+    
+    function formatSoldPrices() {
+      var grayEl = document.getElementsByClassName('price-list-li');
+      var soldEl = document.getElementsByClassName('currency');
+      var priceEl = document.getElementsByClassName('price-val');
+          
+      for (var k = 0; k < grayEl.length; k++) {
+        if (grayEl[k].attributes[1].value === 'sold') {
+          grayEl[k].setAttribute('class', 'gray flex price-list-li');
+        }
+      }
+          
+      for (var j = 0; j < soldEl.length; j++) {
+        if (soldEl[j].attributes[1] && soldEl[j].attributes[1].value === 'sold') {
+          soldEl[j].innerHTML = '';
+        }
+      }
+          
+      for (var m = 0; m < priceEl.length; m++) {
+        if (priceEl[m].attributes[1].value === 'sold') {
+          priceEl[m].setAttribute('class', 'gray price-val');
+          priceEl[m].innerHTML = 'SOLD';
+        }
+      }
+    }
+    
+    // appending price to ul element
+    function appendPrices() {
+      for(var i=0; i < filteredArray.length; i++) {
+        var ulList = document.getElementById('season-prices');
+        
+        // format the date
+        var monthNames = [
+          "Jan", "Feb", "Mar", "April", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        ];
+        
+        var startDate = new Date(filteredArray[i].start_date);
+        
+        var startDateMonth = startDate.getMonth();
+        var startDateDay = startDate.getDate();
+        var startDateFormated = startDateDay + " " + monthNames[startDateMonth];
+        
+        var endDate = new Date(filteredArray[i].end_date);
+        
+        var endDateYear = endDate.getFullYear();
+        var endDateMonth = endDate.getMonth();
+        var endDateDay = endDate.getDate();
+        var endDateFormated = endDateDay + " " + monthNames[endDateMonth] + " " + endDateYear;
+        
+        // add some of the data as attributes to use later
+        ulList.innerHTML += `
+          <li class="flex price-list-li" data-status="${filteredArray[i].status }" id="prices-item-list-` + i + `">
+            <div class="flex">
+              <label class="check-container">
+                <input onClick="setFinalDates(event)" class="price-checkbox" data-index="` + filteredArray[i].index + `" id="` + i + `" data-date-from="` + filteredArray[i].start_date + `" data-date-to="` + filteredArray[i].end_date + `" type="checkbox"></input>
+                <span class="checkmark"></span>
+              </label>
+              <span class="date">` + startDateFormated + `</span> - <span class="date">` + endDateFormated + `</span> 
+            </div>
+            <div class="flex bold">
+              <span class="currency" data-status="${filteredArray[i].status }">` + filteredArray[i].currency + `</span> <span class="margin0 price-val" data-status="${filteredArray[i].status }">` + filteredArray[i].price + `</span>
+            </div>
+          </li>
+        `
+        
+        // disable button if status is sold
+        if(filteredArray[i].status === 'sold') {
+          document.getElementById(i).disabled = true;
+        }
+      }
+    }
+    
+    // this triggers on checkbox click
+    function setFinalDates(event) {
+      
+      var checkedElements = document.getElementsByClassName('price-checkbox'); // get all checkboxes
+      var selectedPrices = [];
+      
+      // add selected checkboxes to selectedPrices array
+      for (var i = 0; i < checkedElements.length; i++) {
+        if (checkedElements[i].checked) {
+         selectedPrices.push(checkedElements[i]); 
+        }
+      }
+      
+      // if there are any selected elements, go through every element and check status.
+      // if all is ok, check index of  each element, if the element has bigger index than first selected element and last selected element - check it, if the status is sold - throw error
+      if (selectedPrices.length > 0) {
+        for (var i = 0; i < filteredArray.length; i++) {
+        if (filteredArray[i].status !== 'sold') {
+          if (filteredArray[i].index > Number(selectedPrices[0].attributes[2].value) && filteredArray[i].index < Number(selectedPrices[selectedPrices.length - 1].attributes[2].value)) {
+            
+            for (var j = 0; j < checkedElements.length; j++) {
+              
+                if (Number(checkedElements[j].attributes[2].value) == filteredArray[i].index) {
+                 checkedElements[j].checked = true;
+                }
+              
+              
+            }
+          } else {
+            error = false;
+          }
+        } 
+      }
+      }
+      
+      if (selectedPrices.length === 0) {
+        document.getElementById('submit-button').setAttribute('disabled', 'disabled');
+        document.getElementById('selected-start').innerHTML = '';
+        document.getElementById('selected-end').innerHTML = '';
+      } else {
+        document.getElementById('submit-button').removeAttribute('disabled');
+      }
+    }
+    
+    // get the first and last selected date in selected range
+    function submitDates() {
+      selectedList = [];
+      var checkedElements = document.getElementsByClassName('price-checkbox');
+      
+      
+      for (var i = 0; i < checkedElements.length; i++) {
+        if (checkedElements[i].checked) {
+         selectedList.push(checkedElements[i]); 
+        }
+      }
+      
+      for (var i = 0; i < filteredArray.length; i++) {
+        if (filteredArray[i].status === 'sold') {
+          if (filteredArray[i].index > Number(selectedList[0].attributes[2].value) && filteredArray[i].index < Number(selectedList[selectedList.length - 1].attributes[2].value)) {
+            error = true;
+            break;
+          } else {
+            error = false;
+          }
+        }
+      }
+      
+      if (selectedList.length > 0 && !error) {
+          
+          var monthNames = [
+            "January", "February", "March", "April", "May", "Jun", "July", "August", "September", "October", "November", "December"
+          ];
+        
+        var startDate = new Date(selectedList[0].attributes[4].value);
+        
+        var startDateYear = startDate.getFullYear();
+        var startDateMonth = startDate.getMonth();
+        var startDateDay = startDate.getDate();
+        var startDateFormated = startDateDay + " " + monthNames[startDateMonth] + " " + startDateYear;
+        
+        var endDate = new Date(selectedList[selectedList.length - 1].attributes[5].value); 
+        
+        var endDateYear = endDate.getFullYear();
+        var endDateMonth = endDate.getMonth();
+        var endDateDay = endDate.getDate();
+        var endDateFormated = endDateDay + " " + monthNames[endDateMonth] + " " + endDateYear;
+        
+        document.getElementById('selected-start').innerHTML = '' + startDateFormated;
+        document.getElementById('selected-end').innerHTML = '' + endDateFormated;
+      } else {
+        document.getElementById('selected-start').innerHTML = 'Invalid range.';
+        document.getElementById('selected-end').innerHTML = '';
+      }
+      
+    }
+</script>
+</body>
+</html>
